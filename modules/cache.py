@@ -1,6 +1,5 @@
 import redis
 import logging
-import os
 import sys
 
 from modules import parameters
@@ -19,20 +18,22 @@ def is_cache_connected(rds):
 
 
 def connect_to_cache():
-    config = parameters.get_redis_config()
+    redis_config = parameters.from_config(
+        ["REDIS_HOST", "REDIS_PASSWORD", "REDIS_PORT"]
+    )
 
     rds = redis.StrictRedis(
-        host=config['hostname'],
-        password=config['password'],
-        port=int(config['port']),
+        host=redis_config["REDIS_HOST"],
+        password=redis_config["REDIS_PASSWORD"],
+        port=int(redis_config["REDIS_PORT"]),
         db=0,
-        socket_connect_timeout=5
+        socket_connect_timeout=5,
     )
 
     connected = is_cache_connected(rds)
     if connected:
-        logging.info('Connected to cache.')
+        logging.info("Connected to cache.")
         return rds
     else:
-        logging.info('Could not connect to redis cache.')
+        logging.info("Could not connect to redis cache.")
         sys.exit()

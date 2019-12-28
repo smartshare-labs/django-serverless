@@ -1,11 +1,8 @@
 import os
 
 
-def get_redis_config():
+def from_config(keys):
     config = {}
-
-    config['hostname'] = os.getenv('REDIS_HOST', '')
-    config['port'] = os.getenv('REDIS_PORT', '0')
-    config['password'] = os.getenv('REDIS_PASS', '')
-
+    for k in keys:
+        config[k] = os.getenv(k, None)
     return config
