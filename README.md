@@ -7,7 +7,7 @@ This is the template we use when developing new serverless python code on AWS. I
 - `./modules`: Reusable, tested python code for common things such as database I/O.
 - `./functions`: This is where your lambda handlers should go. We include an example of one function that calls into one of our modules.
 - `./tests`: Pytest tests for testing modules in `./modules`
- 
+
 ---
 
 ### Usage
@@ -32,9 +32,15 @@ Note: A good rule of thumb when developing is to keep core application logic out
 
 ---
 
+### Running endpoint code directly
+
+Run `python -m functions.functionName.handler` from the root of the repo
+
+---
+
 ### Using the local flask server
 
-We assume you already have docker installed. From the `./local_server` folder, run `docker-compose up --build`. For each lambda handler that you want to expose in the local flask app, add a route in `./local_server/app.py` that forwards the appropriate event/context to your function. 
+We assume you already have docker installed. From the `./local_server` folder, run `docker-compose up --build`. For each lambda handler that you want to expose in the local flask app, add a route in `./local_server/app.py` that forwards the appropriate event/context to your function.
 
 ---
 
@@ -46,4 +52,13 @@ Write your tests in the `./tests` folder. Then:
 2. Source it: `source venv/bin/activate`
 3. Install requirements: `pip install -U requirements.txt`
 
-Finally, to run tests: `python -m pytest tests` from the root directory. 
+Finally, to run tests: `python -m pytest tests` from the root directory.
+
+---
+
+### Creating and running database migrations
+
+Modify your models under sls_django, then:
+
+1. Run `python manage.py makemigrations` to create the migration scripts
+2. Run `python manage.py migrate` to apply those changes to your database
