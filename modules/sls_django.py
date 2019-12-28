@@ -5,6 +5,7 @@ INSTALLED_APPS = [
     "sls_django.example",
 ]
 
+# TODO: pull from parameter store
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",

@@ -10,15 +10,12 @@ from functions.hello import handler as hello
 app = Flask(__name__)
 
 
-@app.route('/')
+@app.route("/")
 def _hello():
 
-    test_event = {
-    }
+    test_event = {}
 
-    test_context = {
-
-    }
+    test_context = {}
 
     response = hello.hello(test_event, test_context)
     return jsonify(response)
@@ -26,3 +23,4 @@ def _hello():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)
+
