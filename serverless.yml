@@ -1,0 +1,44 @@
+service: whats-the-password
+
+custom:
+  relativePathToCommon: "./common"
+  env: ${file(${self:custom.relativePathToCommon}/env.yml)}
+  prefixes: ${file(${self:custom.relativePathToCommon}/prefixes.yml)}
+
+provider:
+  name: aws
+  runtime: python3.7
+  stage: ${opt:stage, dev}
+  profile: smartshare-sls
+  environment:
+    accountId: ${self:custom.env.accountId}
+    REDIS_HOST: ${self:custom.env.redis.${self:provider.stage}.hostname}
+    REDIS_PORT: ${self:custom.env.redis.${self:provider.stage}.port}
+    REDIS_PASS: ${self:custom.env.redis.${self:provider.stage}.password}
+
+  # region: ${opt:region, us-east-1}
+
+package:
+  individually: true
+  exclude:
+    - .git/**
+  include:
+    - modules/*
+
+functions:
+  create_user:
+    handler: functions/create_user/handler.handler
+    events:
+      - http:
+          path: create_user
+          method: post
+
+  get_user:
+    handler: functions/get_user/handler.handler
+    events:
+      - http:
+          path: get_user
+          method: post
+
+plugins:
+  - serverless-python-requirements
