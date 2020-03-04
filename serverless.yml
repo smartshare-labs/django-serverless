@@ -1,0 +1,57 @@
+service: threads-app
+
+custom:
+  relativePathToCommon: "./common"
+  env: ${file(${self:custom.relativePathToCommon}/env.yml)}
+  prefixes: ${file(${self:custom.relativePathToCommon}/prefixes.yml)}
+  pythonRequirements:
+    usePipenv: false
+    dockerizePip: true
+
+provider:
+  name: aws
+  runtime: python3.7
+  stage: ${opt:stage, dev}
+  profile: smartshare-sls
+  environment:
+    accountId: ${self:custom.env.accountId}
+    DB_HOST: ${self:custom.env.db.${self:provider.stage}.hostname}
+    DB_PORT: ${self:custom.env.db.${self:provider.stage}.port}
+    DB_USER: ${self:custom.env.db.${self:provider.stage}.user}
+    DB_PASS: ${self:custom.env.db.${self:provider.stage}.pass}
+    DB_ENGINE: ${self:custom.env.db.${self:provider.stage}.db_engine}
+    DB_NAME: ${self:custom.env.db.${self:provider.stage}.db_name}
+    LIVE: "1"
+
+  # region: ${opt:region, us-east-1}
+
+package:
+  individually: true
+  exclude:
+    - .git/**
+  include:
+    - modules/*
+    - lib/*
+
+functions:
+  postgis_test:
+    handler: functions/postgis_test/handler.handler
+    events:
+      - http:
+          path: postgis-test
+          method: post
+  login:
+    handler: functions/login/handler.handler
+    events:
+      - http:
+          path: login
+          method: post
+  signup:
+    handler: functions/signup/handler.handler
+    events:
+      - http:
+          path: signup
+          method: post
+
+plugins:
+  - serverless-python-requirements

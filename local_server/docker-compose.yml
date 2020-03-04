@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+    api:
+      volumes:
+        - ../functions:/workspace/functions
+        - ../modules:/workspace/modules
+        - ../local_server/app.py:/workspace/app.py
+      build:
+        context: ..
+        dockerfile: ./local_server/Dockerfile
+      ports:
+        - "5000:5000"
+      container_name: api_container
+      networks:
+      - default_network
+
+networks:
+  default_network:
+    external: true

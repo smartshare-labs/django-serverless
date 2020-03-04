@@ -1,0 +1,16 @@
+arn:
+  function: arn:aws:lambda:${self:provider.region}:${self:custom.env.accountId}:function
+  table: arn:aws:dynamodb:${self:provider.region}:${self:custom.env.accountId}:table
+  bucket: 'arn:aws:s3:::'
+  activity: arn:aws:states:${self:provider.region}:${self:custom.env.accountId}:activity
+  stateMachine: arn:aws:states:${self:provider.region}:${self:custom.env.accountId}:stateMachine
+  cluster: arn:aws:states:${self:provider.region}:${self:custom.env.accountId}:cluster
+  service: arn:aws:states:${self:provider.region}:${self:custom.env.accountId}:service
+  role: arn:aws:iam::${self:custom.env.accountId}:role
+  ssm: arn:aws:ssm:${self:provider.region}:${self:custom.env.accountId}:parameter/
+  ssmEnv: arn:aws:ssm:${self:provider.region}:${self:custom.env.accountId}:parameter/env/${self:provider.stage}/
+  batch: arn:aws:batch:${self:provider.region}:${self:custom.env.accountId}:/v1/
+  kms: arn:aws:kms:${self:provider.region}:${self:custom.env.accountId}:key/
+
+# naming convention for all resources
+naming: ${self:service}-${self:provider.stage}
