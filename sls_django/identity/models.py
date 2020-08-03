@@ -47,8 +47,6 @@ class Identity(AbstractBaseUser):
 
     external_id = models.CharField(max_length=30, unique=True, default=object_id)
     email = models.EmailField()
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
 
     class Meta:
         db_table = "identity_identity"

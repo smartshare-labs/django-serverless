@@ -14,3 +14,4 @@ def validate_auth_token(token):
         return False, None
 
     return True, auth_token.identity
+

@@ -34,9 +34,8 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     "rest_framework",
-    "rest_framework_gis",
     "sls_django.identity",
-    "sls_django.threads",
+    "sls_django.pets",
 ]
 
 args = sys.argv
@@ -54,12 +53,12 @@ else:
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "ENGINE": "django.db.backends.postgresql",
         "NAME": "postgres",
         "USER": "postgres",
         "PASSWORD": os.getenv("DB_PASS", "password"),
         "HOST": os.getenv("DB_HOST", "localhost"),
-        "PORT": os.getenv("DB_PORT", "35434"),
+        "PORT": os.getenv("DB_PORT", "35436"),
     }
 }
 
@@ -76,3 +75,15 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+LOGGING = {
+    "version": 1,
+    "handlers": {"console": {"level": "DEBUG", "class": "logging.StreamHandler",},},
+    "loggers": {
+        "django.request": {
+            "handlers": ["console"],
+            "propagate": True,
+            "level": "DEBUG",
+        }
+    },
+}

@@ -2,9 +2,11 @@ import json
 
 from rest_framework import serializers
 from django.http import JsonResponse
+from django.db import connection
 from http import HTTPStatus
 
 from modules.auth import validate_auth_token
+from modules.actions import Actions
 
 
 def _parse_event_body(event):
@@ -37,11 +39,24 @@ def _bad_request(*, validation_error):
     return {
         "statusCode": HTTPStatus.BAD_REQUEST,
         "body": _marshal(validation_error),
+        "headers": {"Access-Control-Allow-Origin": "*"},
     }
 
 
 def _unauthenticated():
-    return {"statusCode": HTTPStatus.UNAUTHORIZED, "body": json.dumps({})}
+    return {
+        "statusCode": HTTPStatus.UNAUTHORIZED,
+        "body": json.dumps({}),
+        "headers": {"Access-Control-Allow-Origin": "*"},
+    }
+
+
+def _action_not_permitted():
+    return {
+        "statusCode": HTTPStatus.METHOD_NOT_ALLOWED,
+        "body": json.dumps({}),
+        "headers": {"Access-Control-Allow-Origin": "*"},
+    }
 
 
 # naive handler; no serialization or auth
@@ -52,17 +67,31 @@ def handler(wrapped_handler):
         formatted_args = (event_body, args[1])  # args[1] is lambda event context
 
         response_body, status_code = wrapped_handler(*formatted_args, **kwargs)
-        response = {"statusCode": status_code, "body": json.dumps(response_body)}
+        response = {
+            "statusCode": status_code,
+            "body": json.dumps(response_body),
+            "headers": {"Access-Control-Allow-Origin": "*"},
+        }
 
         return response
+
+    # close database connections
+    connection.close()
 
     return _wrapper
 
 
 # includes input/output serialization as well as auth
-def serialized_handler(*, input_serializer, output_serializer=None, protected=False):
+def serialized_handler(
+    input_serializer,
+    output_serializer=None,
+    permission_class=None,
+    allowed_actions=[Actions.ActionGeneric],
+    action_serializers={},
+):
     def _outer_wrapper(wrapped_handler):
         def _wrapper(*args, **kwargs):
+            serialize_to_use = input_serializer
             status_code = None
             identity = None
 
@@ -71,27 +100,39 @@ def serialized_handler(*, input_serializer, output_serializer=None, protected=Fa
             event_body = _parse_event_body(event)
             event_headers = _parse_headers(event)
 
+            action = event_body.get("action", Actions.ActionGeneric)
+            if action not in allowed_actions:
+                return _action_not_permitted()
+            else:
+                action_serializer = action_serializers.get(action, input_serializer)
+                serialize_to_use = action_serializer
+
             # if protected, attempt to validate bearer token
-            if protected:
+            if permission_class and action in permission_class.protected:
                 authenticated, identity = validate_auth_token(
                     event_headers.get("Authorization")
                 )
+
                 if not authenticated:
                     return _unauthenticated()
 
             # apply input serializer and save method (if implemented)
             try:
-                serializer = input_serializer(data=event_body)
+                serializer = serialize_to_use(data=event_body)
                 serializer.is_valid(raise_exception=True)
 
                 try:
-                    event_body = serializer.save()
+                    serializer.save()
+                    event_body = serializer.data
                 except NotImplementedError:
                     event_body = serializer.data
 
                 if identity:
                     event_body["identity"] = identity
 
+                event_body[
+                    "action"
+                ] = action  # TODO: build this into context instead probably
                 formatted_args = (
                     event_body,
                     args[1],  # args[1] is lambda event context
@@ -104,13 +145,23 @@ def serialized_handler(*, input_serializer, output_serializer=None, protected=Fa
 
             # validation exceptions aren't caught here; they should be found during development
             if output_serializer:
-                serializer = output_serializer(data=response_body)
-                serializer.is_valid(raise_exception=True)
+
+                if isinstance(response_body, list):
+                    serializer = output_serializer(response_body, many=True)
+                else:
+                    serializer = output_serializer(response_body)
+
+                # serializer.is_valid(raise_exception=True) # TODO: validate this shit
+                response_body = serializer.data
 
             response = {
                 "statusCode": status_code,
                 "body": json.dumps(response_body),
+                "headers": {"Access-Control-Allow-Origin": "*"},
             }
+
+            # close database connections
+            connection.close()
 
             return response
 

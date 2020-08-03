@@ -13,7 +13,7 @@ logger.setLevel(logging.INFO)
 
 
 @decorators.serialized_handler(
-    input_serializer=CreateIdentitySerializer, output_serializer=None, protected=False
+    input_serializer=CreateIdentitySerializer, output_serializer=None
 )
 def handler(event, context):
     return ({}, HTTPStatus.CREATED)

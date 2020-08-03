@@ -41,7 +41,6 @@ psycopg2-binary = "*"
 bson = "*"
 python-dotenv = "*"
 foursquare = "*"
-djangorestframework-gis = "*"
 
 [requires]
 python_version = "3.7"

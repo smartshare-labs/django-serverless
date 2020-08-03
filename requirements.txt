@@ -10,7 +10,6 @@ chardet==3.0.4
 Click==7.0
 Django==3.0.3
 djangorestframework==3.11.0
-djangorestframework-gis==0.15
 entrypoints==0.3
 flake8==3.7.9
 Flask==1.1.1

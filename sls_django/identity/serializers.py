@@ -53,8 +53,6 @@ class CreateIdentitySerializer(serializers.Serializer):
     id = serializers.CharField(source="external_id", max_length=30, read_only=True)
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True, style={"input_type": "password"})
-    first_name = serializers.CharField(max_length=30)
-    last_name = serializers.CharField(max_length=30)
     last_login = serializers.DateTimeField(read_only=True)
     updated = serializers.DateTimeField(read_only=True)
     created = serializers.DateTimeField(read_only=True)
@@ -73,3 +71,7 @@ class CreateIdentitySerializer(serializers.Serializer):
         identity.save()
 
         return identity
+
+    def to_representation(self, value):
+        return {"identity": value}
+

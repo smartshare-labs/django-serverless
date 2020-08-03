@@ -34,12 +34,6 @@ package:
     - lib/*
 
 functions:
-  postgis_test:
-    handler: functions/postgis_test/handler.handler
-    events:
-      - http:
-          path: postgis-test
-          method: post
   login:
     handler: functions/login/handler.handler
     events:
@@ -52,6 +46,11 @@ functions:
       - http:
           path: signup
           method: post
-
+  pets:
+    handler: functions/pets/handler.handler
+    events:
+      - http:
+          path: pets
+          method: post
 plugins:
   - serverless-python-requirements
